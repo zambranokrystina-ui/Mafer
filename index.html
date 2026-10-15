@@ -1,0 +1,200 @@
+<title>Cuestionario Café entre Vendors</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=Figtree:wght@400;500;600&display=swap">
+<style>
+/* Layout: una pregunta-bloque por pantalla, una sola columna angosta, barra de progreso fija arriba */
+:root{
+  --bg:#F4F7F6; --surface:#FFFFFF; --fg:#14262B; --muted:#5A6E72; --line:#D5DFDD;
+  --accent:#17696A; --accent-fg:#FFFFFF; --sun:#F2B134; --sun-fg:#2A1F00; --sel:#E1F0EE;
+  --display:"Bricolage Grotesque",system-ui,sans-serif; --body:"Figtree",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0F1C1F; --surface:#172A2E; --fg:#E8F0EF; --muted:#9DB3B6; --line:#2B4145;
+  --accent:#4FB8B2; --accent-fg:#06201F; --sun:#F2B134; --sun-fg:#2A1F00; --sel:#1D3A3C; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F1C1F; --surface:#172A2E; --fg:#E8F0EF; --muted:#9DB3B6; --line:#2B4145;
+  --accent:#4FB8B2; --accent-fg:#06201F; --sun:#F2B134; --sun-fg:#2A1F00; --sel:#1D3A3C; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:16px/1.5 var(--body);
+  padding-block:0 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:640px;margin:0 auto}
+header.top{position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);padding:14px 0 10px;z-index:2}
+.bar{height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--sun);transition:width .3s}
+.meta{display:flex;justify-content:space-between;gap:12px;font-size:13px;color:var(--muted);margin-top:8px}
+h1,h2{font-family:var(--display);line-height:1.15;text-wrap:balance;margin:0}
+h1{font-size:clamp(28px,7vw,40px);margin-top:20px}
+h2{font-size:24px;margin-top:12px}
+.lead{color:var(--muted);margin:12px 0 0;max-width:60ch}
+.q{margin-top:28px;border:0;padding:0;min-width:0}
+.q legend{font-weight:600;padding:0;margin-bottom:10px;font-size:17px}
+.q .hint{display:block;font-weight:400;color:var(--muted);font-size:14px;margin-top:2px}
+.opts{display:flex;flex-wrap:wrap;gap:8px}
+.opt{position:relative}
+.opt input{position:absolute;opacity:0;inset:0;width:100%;height:100%;margin:0;cursor:pointer}
+.opt span{display:block;padding:10px 14px;border:1.5px solid var(--line);background:var(--surface);border-radius:10px;font-size:15px}
+.opt input:checked+span{border-color:var(--accent);background:var(--sel);font-weight:600}
+.opt input:focus-visible+span{outline:3px solid var(--sun);outline-offset:2px}
+input[type=text],textarea{width:100%;font:inherit;color:var(--fg);background:var(--surface);border:1.5px solid var(--line);border-radius:10px;padding:11px 14px}
+textarea{min-height:96px;resize:vertical}
+input[type=text]:focus,textarea:focus{outline:3px solid var(--sun);outline-offset:1px;border-color:var(--accent)}
+.nav{display:flex;gap:10px;justify-content:space-between;margin-top:36px;flex-wrap:wrap}
+button,.btn{font:inherit;font-weight:600;border-radius:10px;padding:12px 20px;border:1.5px solid var(--accent);cursor:pointer;text-decoration:none;display:inline-block;text-align:center}
+.primary{background:var(--accent);color:var(--accent-fg)}
+.ghost{background:transparent;color:var(--accent)}
+.sun{background:var(--sun);border-color:var(--sun);color:var(--sun-fg)}
+button:focus-visible,.btn:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+.sum{margin-top:20px;display:grid;gap:10px}
+.sum div{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:0;overflow-wrap:anywhere}
+.sum b{display:block;font-size:13px;color:var(--muted);font-weight:500}
+.sum .empty b{color:var(--sun)}
+.actions{display:grid;gap:10px;margin-top:24px}
+.note{font-size:14px;color:var(--muted);margin-top:10px}
+@media (prefers-reduced-motion:reduce){.bar i{transition:none}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="bar"><i id="fill"></i></div>
+    <div class="meta"><span id="stepname">Café entre Vendors</span><span id="count"></span></div>
+  </header>
+  <main id="app"></main>
+</div>
+
+<script>
+var ENDPOINT = "https://formspree.io/f/xyekleny"; // Si lo publicas en Netlify, pega aquí tu URL de Formspree o Google Apps Script
+var WA = "19197715951";
+var STEPS = [
+ {t:"Tu proyecto", q:[
+  {id:"objetivo",type:"one",l:"¿Para qué sería la página principalmente?",o:["Directorio de vendors","Promover los bazares","Las dos cosas"]},
+  {id:"usuarias",type:"many",l:"¿Quién la va a usar?",h:"Puedes marcar varias",o:["Amigas y clientas que buscan proveedores","Vendors que quieren visibilidad","Patrocinadores y empresas","Prensa y medios"]},
+  {id:"marca",type:"one",l:"¿Es solo para Café entre Vendors o también para tu marca personal de relaciones públicas y eventos?",o:["Solo Café entre Vendors","Café entre Vendors y mi marca personal","Dos páginas separadas","Aún no lo sé"]},
+  {id:"idioma",type:"one",l:"¿En qué idioma?",o:["Solo español","Español e inglés"]}]},
+ {t:"Directorio de vendors", q:[
+  {id:"hoy",type:"one",l:"¿Cuántos vendors hay hoy?",o:["Menos de 20","20 a 50","50 a 100","Más de 100"]},
+  {id:"anio",type:"one",l:"¿Cuántos esperas tener en un año?",o:["Menos de 20","20 a 50","50 a 100","Más de 100"]},
+  {id:"datos",type:"many",l:"¿Qué datos quieres mostrar de cada vendor?",h:"Marca todos los que quieras",o:["Logo","Categoría","Descripción","Fotos de productos","Instagram","WhatsApp","Correo","Sitio web","Ciudad o zona"]},
+  {id:"buscar",type:"one",l:"¿Cómo quieres que busquen?",o:["Por categoría (joyas, ropa, comida)","Por nombre","Por ocasión (cumpleaños, regalos)","Las tres"]},
+  {id:"inscribe",type:"one",l:"¿Cómo entran los vendors al directorio?",o:["Yo los agrego","Se inscriben con un formulario y yo apruebo","Aún no lo sé"]},
+  {id:"paga",type:"one",l:"¿Los vendors pagan por aparecer?",o:["No, es gratis","Sí, con membresía","Solo los destacados","Aún no lo sé"]},
+  {id:"lista",type:"one",l:"¿Ya tienes la lista de vendors con sus datos y logos?",o:["Sí, completa","Parcial","No, hay que recopilarla"]}]},
+ {t:"Bazares y eventos", q:[
+  {id:"secciones",type:"many",l:"¿Qué quieres mostrar sobre los eventos?",h:"Marca todo lo que aplique",o:["Próximo bazar con fecha, lugar y vendors","Galería de eventos pasados","Inscripción de vendors al bazar","Venta de entradas","Patrocinadores","Videos"]},
+  {id:"bazar",type:"area",l:"Bazar de Arte del 5 de diciembre: ¿en qué lugar y horario será?",h:"Si aún no lo tienes, déjalo en blanco"}]},
+ {t:"Marca y contenido", q:[
+  {id:"logo",type:"one",l:"¿Tienes logo y colores de Café entre Vendors?",o:["Sí, ambos","Tengo logo pero no colores","No, hay que crearlos"]},
+  {id:"dominio",type:"text",l:"¿Qué nombre de dominio te gustaría?",h:"Por ejemplo: cafeentrevendors.com. Yo reviso si está disponible"},
+  {id:"refs",type:"area",l:"Pega 2 o 3 páginas que te gusten como referencia",h:"Puede ser cualquier sitio, aunque no sea de tu rubro"},
+  {id:"textos",type:"one",l:"¿Quién escribe los textos de la página?",o:["Yo los escribo","Tú los redactas con mi historia","Mitad y mitad"]},
+  {id:"funciones",type:"many",l:"¿Qué funciones quieres?",o:["Botón de WhatsApp","Enlace a Instagram","Suscripción por correo para avisar de bazares","Formulario de contacto"]}]},
+ {t:"Mantenimiento y tiempos", q:[
+  {id:"mant",type:"one",l:"Después de publicada, ¿cómo prefieres actualizar el directorio?",o:["Yo sola (cualquier consulta con costo)","Mantenimiento mensual con cambios incluidos","Quiero ver ambas opciones"]},
+  {id:"cuando",type:"one",l:"¿Para cuándo la necesitas?",o:["Antes del bazar del 5 de diciembre","En enero","Sin fecha fija"]},
+  {id:"extra",type:"area",l:"¿Algo más que quieras contarme?"}]}
+];
+var KEY="cev-respuestas", ans={}, step=0;
+try{ans=JSON.parse(localStorage.getItem(KEY)||"{}")||{}}catch(e){ans={}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(ans))}catch(e){}}
+var app=document.getElementById("app");
+function el(tag,attrs,kids){var n=document.createElement(tag);for(var k in attrs||{}){if(k==="text")n.textContent=attrs[k];else n.setAttribute(k,attrs[k])}(kids||[]).forEach(function(c){n.appendChild(c)});return n}
+function allQ(){var r=[];STEPS.forEach(function(s){s.q.forEach(function(q){r.push(q)})});return r}
+function answered(q){var a=ans[q.id];return Array.isArray(a)?a.length>0:!!(a&&String(a).trim())}
+function fmt(q){var a=ans[q.id];return Array.isArray(a)?a.join(", "):a}
+function progress(){
+  var n=STEPS.length, pct=Math.round(step/n*100);
+  document.getElementById("fill").style.width=Math.max(pct,4)+"%";
+  document.getElementById("stepname").textContent=step<n?STEPS[step].t:"Revisa y envía";
+  document.getElementById("count").textContent=step<n?"Paso "+(step+1)+" de "+n:"Último paso";
+}
+function renderQ(q){
+  var f=el("fieldset",{class:"q"});
+  var lg=el("legend",{text:q.l});
+  if(q.h)lg.appendChild(el("span",{class:"hint",text:q.h}));
+  f.appendChild(lg);
+  if(q.type==="one"||q.type==="many"){
+    var box=el("div",{class:"opts"});
+    q.o.forEach(function(o,i){
+      var id=q.id+"-"+i, inp=el("input",{type:q.type==="one"?"radio":"checkbox",name:q.id,id:id,value:o});
+      var cur=ans[q.id];
+      inp.checked=q.type==="one"?cur===o:(Array.isArray(cur)&&cur.indexOf(o)>-1);
+      inp.addEventListener("change",function(){
+        if(q.type==="one"){ans[q.id]=o}
+        else{var arr=Array.isArray(ans[q.id])?ans[q.id].slice():[];var p=arr.indexOf(o);if(inp.checked&&p<0)arr.push(o);if(!inp.checked&&p>-1)arr.splice(p,1);ans[q.id]=arr}
+        save();
+      });
+      box.appendChild(el("label",{class:"opt"},[inp,el("span",{text:o})]));
+    });
+    f.appendChild(box);
+  }else{
+    var inp=q.type==="area"?el("textarea",{id:q.id}):el("input",{type:"text",id:q.id});
+    inp.value=ans[q.id]||"";
+    inp.addEventListener("input",function(){ans[q.id]=inp.value;save()});
+    f.appendChild(inp);
+  }
+  return f;
+}
+function render(){
+  app.textContent="";progress();
+  if(step<STEPS.length){
+    var s=STEPS[step];
+    if(step===0){
+      app.appendChild(el("h1",{text:"Hola Mafe, armemos tu página"}));
+      app.appendChild(el("p",{class:"lead",text:"Son 5 pasos cortos. Marca lo que te sirva y deja en blanco lo que aún no sepas. Tus respuestas se guardan en este dispositivo mientras avanzas."}));
+    }else app.appendChild(el("h2",{text:s.t}));
+    s.q.forEach(function(q){app.appendChild(renderQ(q))});
+    var nav=el("div",{class:"nav"});
+    nav.appendChild(step>0?el("button",{class:"ghost",type:"button",text:"Atrás"}):el("span"));
+    var nx=el("button",{class:"primary",type:"button",text:step===STEPS.length-1?"Revisar":"Siguiente"});
+    nav.appendChild(nx);app.appendChild(nav);
+    var b=nav.querySelector(".ghost");if(b)b.addEventListener("click",function(){go(step-1)});
+    nx.addEventListener("click",function(){go(step+1)});
+  }else renderEnd();
+}
+function go(n){step=n;render();window.scrollTo(0,0)}
+function text(){
+  var out=["Cuestionario Café entre Vendors"];
+  allQ().forEach(function(q){if(answered(q))out.push("• "+q.l+"\n  "+fmt(q))});
+  return out.join("\n");
+}
+function payload(){
+  var p={_subject:"Cuestionario Café entre Vendors - Mafe Rubio",resumen:text()};
+  allQ().forEach(function(q){if(answered(q))p[q.l]=fmt(q)});
+  return p;
+}
+function renderEnd(){
+  app.appendChild(el("h2",{text:"Revisa tus respuestas"}));
+  var left=allQ().filter(function(q){return!answered(q)}).length;
+  app.appendChild(el("p",{class:"lead",text:left?"Te faltan "+left+" preguntas. Puedes volver a responderlas o enviarlas así y las hablamos.":"Respondiste todo. Gracias."}));
+  var sum=el("div",{class:"sum"});
+  allQ().forEach(function(q){
+    var ok=answered(q);
+    sum.appendChild(el("div",{class:ok?"":"empty"},[el("b",{text:q.l}),document.createTextNode(ok?fmt(q):"Sin responder")]));
+  });
+  app.appendChild(sum);
+  var act=el("div",{class:"actions"});
+  var wa=el("a",{class:"btn sun",target:"_blank",rel:"noopener",href:"https://wa.me/"+WA+"?text="+encodeURIComponent(text()),text:"Enviar mis respuestas por WhatsApp"});
+  act.appendChild(wa);
+  var msg=el("p",{class:"note",role:"status"});
+  if(ENDPOINT){
+    var sb=el("button",{class:"primary",type:"button",text:"Enviar respuestas"});
+    sb.addEventListener("click",function(){
+      sb.disabled=true;msg.textContent="Enviando...";
+      fetch(ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify(payload())})
+        .then(function(r){if(!r.ok)throw 0;msg.textContent="Listo, recibí tus respuestas. Gracias, Mafe."})
+        .catch(function(){sb.disabled=false;msg.textContent="No se pudo enviar. Usa el botón de WhatsApp."});
+    });
+    act.insertBefore(sb,wa);
+  }
+  var cp=el("button",{class:"ghost",type:"button",text:"Copiar respuestas"});
+  cp.addEventListener("click",function(){
+    var done=function(){msg.textContent="Respuestas copiadas. Pégalas en un mensaje."};
+    var fail=function(){msg.textContent="No se pudo copiar. Usa el botón de WhatsApp."};
+    try{navigator.clipboard.writeText(text()).then(done,fail)}catch(e){fail()}
+  });
+  act.appendChild(cp);act.appendChild(msg);app.appendChild(act);
+  var nav=el("div",{class:"nav"});
+  var bk=el("button",{class:"ghost",type:"button",text:"Volver a editar"});
+  bk.addEventListener("click",function(){go(0)});nav.appendChild(bk);app.appendChild(nav);
+}
+render();
+</script>
